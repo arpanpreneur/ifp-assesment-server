@@ -11,6 +11,7 @@ var tokenUtil = require('./token');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var monitorRouter = require('./routes/monitor');
 
 var http = require('http');
 const app = express();
@@ -42,31 +43,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 app.use(tokenUtil.verifyToken);
-app.use('/monitor', usersRouter);
-
-
-app.post('/api/posts', tokenUtil.verifyToken, (req, res) => {
-  return res.json({
-    message: 'Post created...',
-    user: req.authData.userDetails
-  });
-});
-
-app.post('/api/login', (req, res) => {
-  //Mock user
-  const user = {
-    id: 1,
-    username: 'arpan',
-    email: 'arpan@gmail.com'
-  }
-
-  jwt.sign({user}, 'secretkey', {expiresIn: '15m'}, (err, token) => {
-    res.json({
-      token
-    });
-  });
-});
-
+app.use('/monitor', monitorRouter);
 
 io.on('connection', socketioJwt.authorize({
     secret: process.env.SECRET_KEY,
