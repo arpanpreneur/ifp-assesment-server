@@ -54,7 +54,7 @@ io.on('connection', socketioJwt.authorize({
   //this socket is authenticated, we are good to handle more events from it.
     console.log("Authentication Successful");
     console.log('hello! ' + socket.decoded_token);
-    const user = socket.decoded_token.userDetails
+    const user = socket.decoded_token.userDetails;
     
     await joinAllDeviceChannelForUser(user['userid'], socket);
 
