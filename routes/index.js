@@ -19,12 +19,12 @@ router.post('/login', async function(req, res, next) {
 
   let hashed = sha1('NikhilCantHaveSex' + data['password']);
   try {
-    const { rows } = await pool.query(`SELECT userID, username, password from users where username = $1 AND password = $2`, [data['username'], hashed]);
+    const { rows } = await pool.query(`SELECT userID, username from users where username = $1 AND password = $2`, [data['username'], hashed]);
 
     if(rows && rows.length == 1) {
       // Password already matched by database and it is hashed so there's not much chance of SQL injection
       const userDetails = rows[0];
-      
+
       jwt.sign({userDetails}, process.env.SECRET_KEY, {expiresIn: '30m'}, (err, token) => {
 
         if(err) return res.json({"error": true, "message": "Signing Error"});
