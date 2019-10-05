@@ -11,6 +11,7 @@ var tokenUtil = require('./token');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var monitorRouter = require('./routes/monitor');
 
 var http = require('http');
 const app = express();
@@ -38,35 +39,18 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 app.use(tokenUtil.verifyToken);
-app.use('/monitor', usersRouter);
-
-
-app.post('/api/posts', tokenUtil.verifyToken, (req, res) => {
-  return res.json({
-    message: 'Post created...',
-    user: req.authData.userDetails
-  });
-});
-
-app.post('/api/login', (req, res) => {
-  //Mock user
-  const user = {
-    id: 1,
-    username: 'arpan',
-    email: 'arpan@gmail.com'
-  }
-
-  jwt.sign({user}, 'secretkey', {expiresIn: '15m'}, (err, token) => {
-    res.json({
-      token
-    });
-  });
-});
-
+app.use('/monitor', monitorRouter);
 
 io.on('connection', socketioJwt.authorize({
     secret: process.env.SECRET_KEY,
@@ -77,46 +61,11 @@ io.on('connection', socketioJwt.authorize({
   //this socket is authenticated, we are good to handle more events from it.
     console.log("Authentication Successful");
     console.log('hello! ' + socket.decoded_token);
-    const user = socket.decoded_token.userDetails
+    const user = socket.decoded_token.userDetails;
     
     await joinAllDeviceChannelForUser(user['userid'], socket);
 
-    socket.on('get_device_list', async () => {
-
-      try {
-        const { rows } = await pool.query(`SELECT deviceid, devicename from device where userid = $1`, [user['userid']]);
-        if(rows && rows.length > 0) {
-          socket.emit('get_device_list', rows);
-        }
-      } catch(ex) {
-        console.log(ex);
-      }
-    }); 
-
-    socket.on('get_initial_data', async () => {
-      console.log("hello");
-      try{
-        const { rows } = await pool.query(
-          `select 
-            device.deviceid, 
-            monitor.status, 
-            monitor.load, 
-            monitor.time 
-          from 
-            monitor
-            inner join device on device.deviceid = monitor.deviceid 
-            inner join users on users.userid = device.userid
-          where users.userid = $1`, [user['userid']]);
-
-        console.log(rows);
-        
-        socket.emit('get_initial_data', rows);
-
-      } catch(ex) {
-
-      }
-    })
-
+    monitorHandler(socket, pool);
 
 });
 
