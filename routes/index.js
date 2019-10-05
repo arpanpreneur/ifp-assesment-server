@@ -27,21 +27,20 @@ router.post('/login', async function(req, res, next) {
 
       jwt.sign({userDetails}, process.env.SECRET_KEY, {expiresIn: '30m'}, (err, token) => {
 
-        if(err) return res.json({"error": true, "message": "Signing Error"});
+        if(err) return res.status(401).json({"error": true, "message": "Signing Error"});
 
         return res.json({
           "error": false,
           "token": token,
-          
         });
       });
     } else {
-      return res.json({"error": true, "message": "User/Password combination invalid"});
+      return res.status(401).json({"error": true, "message": "User/Password combination invalid"});
     }
 
   } catch(ex) {
     console.log(ex);
-    return res.json({"error": true, "msg": "Something went wrong!!"});
+    return res.status(401).json({"error": true, "msg": "Something went wrong!!"});
   }
 });
 
