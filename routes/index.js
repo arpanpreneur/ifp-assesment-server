@@ -14,7 +14,7 @@ router.post('/login', async function(req, res, next) {
 
   const data = req.body;
   if(!(data && data['username'] && data['password'])) {
-    return res.json("I know there's no docs but I guess you have common sense");
+    return res.json("This API expects username and password fields");
   }
 
   let hashed = sha1('NikhilCantHaveSex' + data['password']);

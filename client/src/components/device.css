@@ -1,0 +1,11 @@
+.device-holder {
+    padding: 10px 10px 10px 10px;
+}
+
+.online {
+    color: green
+}
+
+.offline {
+    color: red;
+}

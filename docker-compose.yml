@@ -1,0 +1,25 @@
+version: "2"
+services:
+  node:
+    image: "node:12"
+    user: "node"
+    ports:
+      - "8000:8000"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./:/home/node/app
+    expose:
+      - "8000"
+    command: "npm start"
+                            
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 5432:5432
