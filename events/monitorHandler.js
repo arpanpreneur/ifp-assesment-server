@@ -36,5 +36,29 @@ module.exports = function (socket, pool) {
         } catch(ex) {
   
         }
-      })
+      });
+
+      socket.on('get_latest_device_status', async () => {
+        try{
+          const { rows } = await pool.query(
+            `select x.deviceid, x.latest_time_entry, monitor.status
+            from 
+            monitor,
+            (select device.deviceid, MAX(monitor.time) as latest_time_entry
+            from monitor
+            inner join device on device.deviceid = monitor.deviceid 
+            inner join users on users.userid = device.userid
+            where users.userid = $1
+            group by device.deviceid) x 
+            where monitor.time = latest_time_entry`, [user['userid']]);
+
+          console.log(rows);
+          
+          socket.emit('get_latest_device_status', rows);
+
+        } catch(ex) {
+
+        }
+
+      });
 };
