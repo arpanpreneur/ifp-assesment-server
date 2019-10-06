@@ -19,7 +19,7 @@ const app = express();
 var server = http.createServer(app);
 // Pass a http.Server instance to the listen method
 
-server.listen(5000, () => console.log('Server started at port 5000'));
+server.listen(8000, () => console.log('Server started at port 5000'));
 var io = require('socket.io').listen(server);
 app.set('socketio', io);
 
@@ -32,7 +32,11 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+app.get('/*', function (req, res) {
+  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+});
 
 app.use((req, res, next) => {
   req.dbpool = pool;
